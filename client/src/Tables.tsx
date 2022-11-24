@@ -10,21 +10,21 @@ import {
   TableContainer,
   TableFooter,
   TablePagination,
-  IconButton,
-  InputBase,
   Button,
-  TextField
+  TextField,
+  Box,
 } from "@mui/material";
 
-import SearchIcon from '@mui/icons-material/Search';
+import SearchIcon from "@mui/icons-material/Search";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 const Tables = () => {
   const [movie, setMovie] = useState([]);
   const [count, setCount] = useState(0);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [btn,setBtn] = useState(false)
-  const [input,setInput] = useState("")
+  const [btn, setBtn] = useState(false);
+  const [input, setInput] = useState("");
 
   useEffect(() => {
     axios
@@ -37,8 +37,6 @@ const Tables = () => {
       })
       .catch((err) => console.log(err));
   }, []);
-
-  // Avoid a layout jump when reaching the last page with empty rows.
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -54,7 +52,21 @@ const Tables = () => {
     setPage(0);
   };
 
-  
+  const eventHandler = (e: any) => {
+    setInput(e.target.value);
+    setBtn(true);
+    axios
+      .post("/movies/search", { input })
+      .then((searchResponse) => {
+        setMovie(searchResponse.data.searchResult);
+        setCount(searchResponse.data.count);
+      })
+      .catch((err) => console.log(err));
+  };
+  const cancelSearch = (e: any) => {
+    e.preventDefault();
+    window.location.reload();
+  };
 
   return (
     <div>
@@ -68,27 +80,59 @@ const Tables = () => {
         Movies List
       </h1>
 
-     {
-      btn?
-      <>
       <form action="">
-
-      <TextField style={{marginLeft:"1200px"}} onChange={(e:any)=>setInput(e.target.value)} value={input}/>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginLeft: "700px",
+          }}
+        >
+          <SearchIcon
+            sx={{
+              bgcolor: "#3f51b5",
+              color: "white",
+              borderRadius: "50%",
+              padding: "7px",
+              mr: 1,
+              my: 0.5,
+              marginTop: "20px",
+            }}
+          />
+          <TextField
+            type="text"
+            id="input-with-sx"
+            label="Search movies..."
+            variant="standard"
+            onChange={eventHandler}
+          />
+          {btn ? (
+            <>
+              <Button onClick={cancelSearch}>
+                {" "}
+                <CancelIcon
+                  sx={{
+                    color: "grey",
+                    marginTop: "10px",
+                    position: "absolute",
+                    marginLeft: "-80px",
+                  }}
+                />
+              </Button>
+            </>
+          ) : (
+            <></>
+          )}
+        </Box>
       </form>
-      </>
-      :
-      <>
-      <Button onClick={()=>{setBtn(true)}} style={{marginLeft:"1300px"}}><SearchIcon sx={{bgcolor:"#3f51b5",color:"white",borderRadius:"50%",padding:"10px"}} /></Button>
-      </>
-     }
 
-      
       <TableContainer
         component={Paper}
         sx={{
           borderRadius: 5,
-          minHeight: "481px",
-          maxWidth: 950,
+          minHeight: 500,
+          maxWidth: 900,
           display: "flex",
           justifyItems: "center",
           m: "auto",
@@ -106,7 +150,7 @@ const Tables = () => {
               <TableCell
                 sx={{ bgcolor: "#3f51b5", color: "white", fontWeight: "bold" }}
               >
-                Name
+                Movie Name
               </TableCell>
               <TableCell
                 sx={{ bgcolor: "#3f51b5", color: "white", fontWeight: "bold" }}
@@ -145,6 +189,7 @@ const Tables = () => {
           ) : (
             <></>
           )}
+
           <TableFooter>
             <TableRow>
               <TablePagination
@@ -174,7 +219,6 @@ const Tables = () => {
           </TableFooter>
         </Table>
       </TableContainer>
-      <h1>{input}</h1>
     </div>
   );
 };
